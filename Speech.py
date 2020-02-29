@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import os
+import sys
 import speech_recognition as sr
 import moviepy.editor as mp
-
 
 clip = mp.VideoFileClip("Talking.mp4")
 clip.audio.write_audiofile("talkingaudio.wav")
