@@ -18,11 +18,12 @@ with audio as source:
     print(recognized_text)
     import requests
     data = {'text':recognized_text}
+    # Uses the following website to generate punctuated file
     response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
 
 f=open("Lesson.txt","w+")
 if isinstance(response, basestring):
-    f.write(apple)
+    f.write(response)
 f.close()
 
 
