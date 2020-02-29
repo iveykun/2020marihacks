@@ -22,7 +22,7 @@ with audio as source:
     response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
 
 f=open("Lesson.txt","w+")
-if isinstance(response, basestring):
+if isinstance(response, str):
     f.write(response)
 f.close()
 
