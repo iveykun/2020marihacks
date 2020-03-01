@@ -368,7 +368,7 @@ def Main():
                 print("Invalid input")
 
     window.close()
-    
+
 def Text():
     sg.theme('Reddit')
     layout = [  [sg.Text('What is the name of your image file?')],
