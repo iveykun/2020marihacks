@@ -3,9 +3,9 @@ import nltk
 from nltk import ne_chunk
 from nltk.tokenize import word_tokenize
 import random
-def dt(txt):
+def dt(txt):  # remember to add quotes ex: dt('corona.txt')
     r = Rake(min_length=2, max_length=3) # only takes terms with 2-3 words in them, ex. Thomas Edison, John F Kennedy
-    text = open(txt)
+    text = open(str(txt))
     #text = open(input())
     temp = text.read()
     textcopy = str(temp)
@@ -24,12 +24,23 @@ def dt(txt):
         lst.append(word)  # appends all keywords found to lst
     lst = lst[0:50:2]   # removing half of them in steps of 2 to avoid having too many blanks in one sentence
     #print(lst)
-
+    dic = {}
     for count, thing in enumerate(lst):
-        textcopy = textcopy.replace(thing, ' _________ ', '(', count, ') ')  # replacing the keywords with blanks
+        dic[thing] = count
+        replace = ' _________{}{}{} '.format('[', count, '] ') 
+        textcopy = textcopy.replace(thing, replace)  # replacing the keywords with blanks
     #textcopy.replace('thinking', '________')
     f = open("printout.txt", "w+")
     f.write(textcopy)  # writing final text to txt
+    
+    f.write('\n')
+    f.write('\n')
+    f.write('answers:')
+    f.write('\n')
+    for item in dic.items():
+        f.write(str(item))
+        f.write('\n')
+    
     f.close()
     #print(textcopy)
 
