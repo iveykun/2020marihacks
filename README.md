@@ -9,4 +9,4 @@ To run the program, run gui.py
 Requirements
 ------------
 Use pip to install the necessary dependancies
-`pip install nltk moviepy speech_recognition pydub rake`
+`pip install nltk moviepy speech_recognition pydub rake Pillow rake-nltk pytesseract wikipedia gTTS PySimpleGUI`
