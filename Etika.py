@@ -476,6 +476,7 @@ def QuizAsk():
     
 
 def Quiz():
+    os.startfile("Quiz.txt")
     sg.theme('Reddit')
     layout = [  [sg.Text('Ok!')],
                 [sg.Text('The Quiz is in a folder called Quiz.txt')],
@@ -598,4 +599,3 @@ def Thanks():
         
 
 Opening()
-
