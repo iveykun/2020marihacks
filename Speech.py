@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#### FOR DEVELOPMENT & TESTING PURPOSES ####
 import os
 import sys
 import speech_recognition as sr
