@@ -99,6 +99,14 @@ def tts_from_file(source_file):
             raise ValueError("Recognized Text not a string!")
 
 
+# Cleanup.
+# Deletes temporary chunk files and pymovie conversion result
+# Appends temporary converted file to enable single-loop cleanup
+def cleanup()
+    filelist.append(wavfile)
+    for wfile in filelist:
+        if os.path.exists(wfile):
+            os.remove(wfile)
 
 #######################
 #__   __       _
@@ -152,24 +160,17 @@ data = {'text':out_string}
 try:
     response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
 except:
+    cleanup()
     sys.exit(126)
 # 200 Corresponds to HTML response code OK
 if response.status_code != 200:
     # Exits the program on erronous request
     print("Incomplete request, Error code: " + response.status_code )
+    cleanup()
     sys.exit(127)
 #Logging purposes
 print(response.text)
 f=open("Lesson.txt","w+")
 f.write(response.text)
 f.close()
-
-# Cleanup.
-# Deletes temporary chunk files and pymovie conversion result
-# Appends temporary converted file to enable single-loop cleanup
-
-filelist.append(wavfile)
-for wfile in filelist:
-    if os.path.exists(wfile):
-        os.remove(wfile)
-
+cleanup()
