@@ -102,7 +102,7 @@ def tts_from_file(source_file):
 # Cleanup.
 # Deletes temporary chunk files and pymovie conversion result
 # Appends temporary converted file to enable single-loop cleanup
-def cleanup()
+def cleanup():
     filelist.append(wavfile)
     for wfile in filelist:
         if os.path.exists(wfile):
@@ -153,7 +153,7 @@ if need_cut:
         i+=1
 elapsed = start - time.time()
 #For logging purposes
-print(out_string + " in " + str(elapsed) " seconds")
+print(out_string + " in " + str(elapsed) + " seconds")
 import requests
 data = {'text':out_string}
 # Uses the following website to generate punctuated file
