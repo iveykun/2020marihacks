@@ -150,7 +150,7 @@ if need_cut:
             out_string += temp_string
         except:
             print("Skipped file " + audio_file + " in chunk list")
-        i+=1
+        index+=1
 elapsed = start - time.time()
 #For logging purposes
 print(out_string + " in " + str(elapsed) + " seconds")
