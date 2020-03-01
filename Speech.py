@@ -10,7 +10,8 @@ from pydub.silence import split_on_silence
 def cut_audio(audiofile):
     soundstream = AudioSegment.from_wav(audiofile)
     # Splits wav file on silence
-    print("Splitting file")
+    print("Splitting file...")
+    stime = time.time()
     chunks = split_on_silence(
         soundstream, 
         min_silence_len=400, 
@@ -19,6 +20,8 @@ def cut_audio(audiofile):
         # structure than false negatives
         silence_thresh=-45, 
     )
+    etime = time.time()
+    print("...in " + etime + " seconds")
     # Unable to find any silence
     if chunks == []:
         print("Unable to find silence!")
