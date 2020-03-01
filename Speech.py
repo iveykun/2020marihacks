@@ -102,8 +102,7 @@ def tts_from_file(source_file):
 # Cleanup.
 # Deletes temporary chunk files and pymovie conversion result
 # Appends temporary converted file to enable single-loop cleanup
-def cleanup():
-    filelist.append(wavfile)
+def cleanup(filelist):
     for wfile in filelist:
         if os.path.exists(wfile):
             os.remove(wfile)
@@ -117,60 +116,64 @@ def cleanup():
 ######################
 
 # constant string to facilitate file interoperability
-wavfile = "tempwavaudio.wav"
-clip = mp.VideoFileClip("Talking.mp4")
-length = clip.duration
-clip.audio.write_audiofile(wavfile)
+def recon_speech(filename="Talking.mp4"):
+    wavfile = "tempwavaudio.wav"
+    clip = mp.VideoFileClip(filename)
+    length = clip.duration
+    clip.audio.write_audiofile(wavfile)
 
-r=sr.Recognizer()
-if length > 120:
-    need_cut = True
-else:
-    need_cut = False
-out_string = ""
-# Measuring TTS time
-start = time.time()
-# Avoids spliting the Audiofile if its short enough
-if not need_cut:
-    try:
-        temp_string = tts_from_file(wavfile)
-        out_string += temp_string
-    except ValueError:
+    r=sr.Recognizer()
+    if length > 120:
         need_cut = True
-        # Resets output string
-        out_string = ""
-if need_cut:
-    filelist = cut_audio(wavfile)
-    maxlen = len(filelist)
-    index = 1
-    for audio_file in filelist:
-        print("Processing chunk " + str(index) + " of "  + str(maxlen))
+    else:
+        need_cut = False
+    out_string = ""
+    # Measuring TTS time
+    start = time.time()
+    # Avoids spliting the Audiofile if its short enough
+    if not need_cut:
         try:
-            temp_string = tts_from_file(audio_file)
+            temp_string = tts_from_file(wavfile)
             out_string += temp_string
-        except:
-            print("Skipped file " + audio_file + " in chunk list")
-        index+=1
-elapsed = time.time() - start
-#For logging purposes
-print(out_string + " in " + str(elapsed) + " seconds")
-import requests
-data = {'text':out_string}
-# Uses the following website to generate punctuated file
-try:
-    response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
-except:
+        except ValueError:
+            need_cut = True
+            # Resets output string
+            out_string = ""
+    if need_cut:
+        filelist = cut_audio(wavfile)
+        maxlen = len(filelist)
+        index = 1
+        for audio_file in filelist:
+            print("Processing chunk " + str(index) + " of "  + str(maxlen), end="\r")
+            try:
+                temp_string = tts_from_file(audio_file)
+                out_string += temp_string
+            except:
+                print("Skipped file " + audio_file + " in chunk list")
+            index+=1
+    elapsed = time.time() - start
+    #For logging purposes
+    print(out_string + " in " + str(elapsed) + " seconds", end="\r")
+    import requests
+    data = {'text':out_string}
+    # Uses the following website to generate punctuated file
+    try:
+        response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
+    except:
+        cleanup()
+        sys.exit(126)
+    # 200 Corresponds to HTML response code OK
+    if response.status_code != 200:
+        # Exits the program on erronous request
+        print("Incomplete request, Error code: " + response.status_code )
+        cleanup()
+        sys.exit(127)
+    #Logging purposes
+    print(response.text)
+    f=open("Lesson.txt","w+")
+    f.write(response.text)
+    f.close()
     cleanup()
-    sys.exit(126)
-# 200 Corresponds to HTML response code OK
-if response.status_code != 200:
-    # Exits the program on erronous request
-    print("Incomplete request, Error code: " + response.status_code )
-    cleanup()
-    sys.exit(127)
-#Logging purposes
-print(response.text)
-f=open("Lesson.txt","w+")
-f.write(response.text)
-f.close()
-cleanup()
+    # Returns 0 in case of sucess, as is tradition 
+    return 0
+recon_speech()
