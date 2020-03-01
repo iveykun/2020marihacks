@@ -25,7 +25,7 @@ def cut_audio(audiofile):
         # to enable lots of possible cuts 
         silence_thresh=-45, 
     )
-    etime = time.time()
+    etime = time.time() - stime
     print("...in " + str(etime) + " seconds")
     # Unable to find any silence
     if chunks == []:
@@ -151,7 +151,7 @@ if need_cut:
         except:
             print("Skipped file " + audio_file + " in chunk list")
         index+=1
-elapsed = start - time.time()
+elapsed = time.time() - start
 #For logging purposes
 print(out_string + " in " + str(elapsed) + " seconds")
 import requests
