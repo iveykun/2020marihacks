@@ -40,7 +40,7 @@ def cut_audio(audiofile):
     out_chunks = [chunks[0]]
     i = 0 
     for chunk in chunks[1:]:
-        print("Recombining " + str(i) + " on " + str(chlen))
+        print("Recombining " + str(i) + " on " + str(chlen), end="\r")
         # Appends a new chunk to the last if it is too short
         if len(out_chunks[-1]) < out_len:
             out_chunks[-1] += chunk
@@ -79,6 +79,7 @@ def cut_audio(audiofile):
 # note : assumes file is in directory of program
 # note2: Avoid high-volume requests  
 def tts_from_file(source_file):
+    r = sr.Recognizer()
     with sr.AudioFile(source_file) as source:
         audio = r.record(source)
         try:
@@ -113,7 +114,7 @@ def cleanup(filelist):
 #| |\/| |/ _` | | '_ \
 #| |  | | (_| | | | | |
 #|_|  |_|\__,_|_|_| |_|
-######################
+#######################
 
 # constant string to facilitate file interoperability
 def recon_speech(filename="Talking.mp4"):
@@ -144,7 +145,7 @@ def recon_speech(filename="Talking.mp4"):
         maxlen = len(filelist)
         index = 1
         for audio_file in filelist:
-            print("Processing chunk " + str(index) + " of "  + str(maxlen), end="\r")
+            print("Processing chunk " + str(index) + " of "  + str(maxlen))
             try:
                 temp_string = tts_from_file(audio_file)
                 out_string += temp_string
@@ -160,20 +161,20 @@ def recon_speech(filename="Talking.mp4"):
     try:
         response = requests.post('http://bark.phon.ioc.ee/punctuator', data=data)
     except:
-        cleanup()
+        cleanup(filelist)
         sys.exit(126)
     # 200 Corresponds to HTML response code OK
     if response.status_code != 200:
         # Exits the program on erronous request
         print("Incomplete request, Error code: " + response.status_code )
-        cleanup()
+        cleanup(filelist)
         sys.exit(127)
     #Logging purposes
     print(response.text)
     f=open("Lesson.txt","w+")
     f.write(response.text)
     f.close()
-    cleanup()
+    cleanup(filelist)
     # Returns 0 in case of sucess, as is tradition 
     return 0
 recon_speech()
