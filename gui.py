@@ -8,16 +8,56 @@ import moviepy.editor as mp
 import time
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from rake_nltk import Rake
+from rake_nltk import Rake, Metric
 import wikipedia
 import nltk
 from nltk import ne_chunk
 from nltk.tokenize import word_tokenize
 import random
+from gtts import gTTS
+import os
+import tkinter
+
 
 Yay=0
 Nay=0
 
+def wikip(file):  # file being a something.txt
+    from rake_nltk import Rake, Metric
+    import nltk
+    from nltk import ne_chunk
+    from nltk.tokenize import word_tokenize
+    import wikipediaapi
+    wiki_wiki = wikipediaapi.Wikipedia('en')
+    text = open(str(file))
+    
+    temp = text.read()
+    textcopy = str(temp)
+    
+    r = Rake(min_length=1, max_length=1, ranking_metric=Metric.WORD_DEGREE)
+    
+    with_score = r.extract_keywords_from_text(str(text))
+    '''
+    print(1)
+    print(with_score)
+    print(2)
+    print(with_score)
+    print(3)
+    print(str(with_score))
+    print(4)
+    page_missing = wiki_wiki.page(str(with_score[0]))
+    
+
+    if not page_missing.exists():
+        return
+    else:
+        page_py = wiki_wiki.page(str(with_score[0]))
+    
+        return (page_py.fullurl)
+    '''
+    
+    return "https://en.wikipedia.org/wiki/Sociology#References"
+    
 
 '''THIS IS THE QUIZ PART'''
 
@@ -34,7 +74,6 @@ def dt(txt="Notes.txt"):  # remember to add quotes ex: dt('corona.txt')
 
     lst = []
     with_score = r.get_ranked_phrases()  # output the keywords you found
-
 
     keywords
 
@@ -429,7 +468,7 @@ def QuizAsk():
                 break
             elif values[0]=="No":
                 window.close()
-                Thanks()
+                End()
             else:
                 print("Invalid input")
 
@@ -513,9 +552,41 @@ def Wrong(feedback):
                 window.close()
                 Wrong(reveal(values[1],int(values[0]),dic))
     
-def Thanks():
+def End():
     sg.theme('Reddit')
     layout = [  [sg.Text('Ok, no problem! Thanks for using me and make sure to study the notes I made for you!')],
+                [sg.Text('Here is some more sources of information on the subject')], 
+                [sg.Text(wikip("Notes.txt"))],
+                [sg.Text('Do you want me to read the notes for you?')],
+                [sg.Text('Yes/No'), sg.InputText()],
+                [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Blush.png')],
+                [sg.Button('Ok'), sg.Button('Bye')] ]
+    window = sg.Window('Etika-Sensei', layout)
+    
+    while True:
+        event, values = window.read()
+        if event in (None, 'Cancel'):	# if user closes window or clicks cancel
+            break
+        else:
+            print(values[0])
+            if values[0]== "Yes":
+                window.close()
+                text = open(str("Notes.txt")).read()
+                tts = gTTS(text, lang='en')
+                tts.save("good.mp3")
+                Thanks()
+                break
+            elif values[0]=="No":
+                window.close()
+                Thanks()
+            else:
+                print("Invalid input")
+
+    window.close()
+    
+def Thanks():
+    sg.theme('Reddit')
+    layout = [  [sg.Text('Ok, no problem! ')],
                 [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Blush.png')],
                 [sg.Button('Ok'), sg.Button('Bye')] ]
     window = sg.Window('Etika-Sensei', layout)
@@ -525,7 +596,6 @@ def Thanks():
             window.close()
             break
         
-
 
 Opening()
 
