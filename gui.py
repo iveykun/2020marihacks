@@ -14,7 +14,8 @@ from nltk import ne_chunk
 from nltk.tokenize import word_tokenize
 import random
 
-
+Yay=0
+Nay=0
 
 
 '''THIS IS THE QUIZ PART'''
@@ -460,8 +461,12 @@ def Quiz():
     
                 
 def Right(feedback):
+    global Yay
+    global Nay
+    Yay+=1
     sg.theme('Reddit')
     layout = [  [sg.Text(feedback)],
+                [sg.Text("Your score is: " + str(100*Yay/(Nay+Yay)) + "%")],
                 [sg.Text('Number'), sg.InputText()],
                 [sg.Text('Answer'), sg.InputText()],
                 [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Happy.png')],
@@ -482,8 +487,12 @@ def Right(feedback):
                 Wrong(reveal(values[1],int(values[0]),dic))
     
 def Wrong(feedback):
+    global Yay
+    global Nay
+    Nay+=1
     sg.theme('Reddit')
     layout = [  [sg.Text(feedback)],
+                [sg.Text("Your score is: " + str(100*Yay/(Nay+Yay)) + "%")],
                 [sg.Text('Number'), sg.InputText()],
                 [sg.Text('Answer'), sg.InputText()],
                 [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Diss.png')],
@@ -517,5 +526,8 @@ def Thanks():
         if event in (None, 'Bye'):	# if user closes window or clicks cancel
             window.close()
             break
+        
+
+
 Opening()
 
