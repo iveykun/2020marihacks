@@ -10,8 +10,13 @@ from pydub.silence import split_on_silence
 # Cuts audio in ~120 seconds chunks where the cut corresponds
 # to a silence in the audio stream
 # input arg: file path of .wav file
+#            chunk_size corresponds to the target size of the 
+#            sliced chunk. Lower seems to be better
+#            silence_threshold corresponds to the volume considered 
+#            silence by the pydub function.
+#            Lower means quieter;
 # note:      file must be in the directory of program
-def cut_audio(audiofile):
+def cut_audio(audiofile, chunk_size=30, silence_threshold=-45):
     soundstream = AudioSegment.from_wav(audiofile)
     # Splits wav file on silence
     # to an array of AudioSegments
@@ -23,7 +28,7 @@ def cut_audio(audiofile):
         min_silence_len=400, 
         # Silence threshold is deliberatly low
         # to enable lots of possible cuts 
-        silence_thresh=-45, 
+        silence_thresh=silence_threshold, 
     )
     etime = time.time() - stime
     print("...in " + str(etime) + " seconds")
@@ -36,7 +41,7 @@ def cut_audio(audiofile):
     # Target length of chunks cuts
     # in milliseconds. Small enough to accepted by the 
     # Google Web Speech to Text API
-    out_len = 100*1000
+    out_len = chunk_size*1000
     out_chunks = [chunks[0]]
     i = 0 
     for chunk in chunks[1:]:
@@ -117,13 +122,12 @@ def cleanup(filelist):
 #######################
 
 # constant string to facilitate file interoperability
-def recon_speech(filename="Talking.mp4"):
+def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
     wavfile = "tempwavaudio.wav"
     clip = mp.VideoFileClip(filename)
     length = clip.duration
     clip.audio.write_audiofile(wavfile)
 
-    r=sr.Recognizer()
     if length > 120:
         need_cut = True
     else:
@@ -141,7 +145,7 @@ def recon_speech(filename="Talking.mp4"):
             # Resets output string
             out_string = ""
     if need_cut:
-        filelist = cut_audio(wavfile)
+        filelist = cut_audio(wavfile, chunk_size, silence_threshold)
         maxlen = len(filelist)
         index = 1
         for audio_file in filelist:
@@ -174,7 +178,8 @@ def recon_speech(filename="Talking.mp4"):
     f=open("Lesson.txt","w+")
     f.write(response.text)
     f.close()
-    cleanup(filelist)
+    #cleanup(filelist)
     # Returns 0 in case of sucess, as is tradition 
     return 0
+#### FOR TESTING PURPOSES ONLY ####
 recon_speech()
