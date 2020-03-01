@@ -1,4 +1,4 @@
-ETIKA-SENSEI
+KDF presents: ETIKA-SENSEI
 ============
 The holy grail - substitute teacher for everyone
 
