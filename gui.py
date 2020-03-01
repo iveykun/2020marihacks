@@ -61,7 +61,22 @@ def dt(txt="Notes.txt"):  # remember to add quotes ex: dt('corona.txt')
 
 def reveal(answer, num, dic):  # get answer, tells if it's right
     real = dic.get(num)
+    
+    fin = open("Quiz.txt", 'r') # make it change the text in the file when asked for answer
+    fout = open("Corrected.txt", 'w')
+    need = ' __{}__{}{}{} '.format(real, '[', num, '] ')
+    for line in fin:
+        look = ' _________{}{}{} '.format('[', num, '] ')
+        if look in line:
+            newline = line.replace(look, real)
+            fout.write(newline)
+        else:
+            fout.write(line)
+    fin.close()
+    fout.close()
+    
     if answer in real:
+        
         feedback = "Correct! The answer is " + real
         return feedback
     else:
