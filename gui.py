@@ -9,6 +9,7 @@ import time
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from rake_nltk import Rake
+import wikipedia
 import nltk
 from nltk import ne_chunk
 from nltk.tokenize import word_tokenize
@@ -21,7 +22,7 @@ Nay=0
 '''THIS IS THE QUIZ PART'''
 
 def dt(txt="Notes.txt"):  # remember to add quotes ex: dt('corona.txt')
-    r = Rake(min_length=2, max_length=3) # only takes terms with 2-3 words in them, ex. Thomas Edison, John F Kennedy
+    r = Rake(min_length=1, max_length=3) # only takes terms with 2-3 words in them, ex. Thomas Edison, John F Kennedy
     text = open(str(txt))
     #text = open(input())
     temp = text.read()
@@ -39,7 +40,7 @@ def dt(txt="Notes.txt"):  # remember to add quotes ex: dt('corona.txt')
 
     for word in with_score:
         lst.append(word)  # appends all keywords found to lst
-    lst = lst[0:50:2]   # removing half of them in steps of 2 to avoid having too many blanks in one sentence
+    lst = lst[0:40:2]   # removing half of them in steps of 2 to avoid having too many blanks in one sentence
     #print(lst)
     dic = {}
     for count, thing in enumerate(lst):
@@ -466,7 +467,7 @@ def Right(feedback):
     Yay+=1
     sg.theme('Reddit')
     layout = [  [sg.Text(feedback)],
-                [sg.Text("Your score is: " + str(100*Yay/(Nay+Yay)) + "%")],
+                [sg.Text("Your score is: " + str(int(100*Yay/(Nay+Yay))) + "%")],
                 [sg.Text('Number'), sg.InputText()],
                 [sg.Text('Answer'), sg.InputText()],
                 [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Happy.png')],
@@ -492,7 +493,7 @@ def Wrong(feedback):
     Nay+=1
     sg.theme('Reddit')
     layout = [  [sg.Text(feedback)],
-                [sg.Text("Your score is: " + str(100*Yay/(Nay+Yay)) + "%")],
+                [sg.Text("Your score is: " + str(int(100*Yay/(Nay+Yay))) + "%")],
                 [sg.Text('Number'), sg.InputText()],
                 [sg.Text('Answer'), sg.InputText()],
                 [sg.Image(r'C:\Users\lotfi\Desktop\Marihacks\UI\Program\Images\Diss.png')],
@@ -511,9 +512,6 @@ def Wrong(feedback):
             else:
                 window.close()
                 Wrong(reveal(values[1],int(values[0]),dic))
-    
-        
-    
     
 def Thanks():
     sg.theme('Reddit')
