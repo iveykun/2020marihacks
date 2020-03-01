@@ -7,17 +7,22 @@ import time
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
+# Cuts audio in ~120 seconds chunks where the cut corresponds
+# to a silence in the audio stream
+# input arg: file path of .wav file
+# note:      file must be in the directory of program
 def cut_audio(audiofile):
     soundstream = AudioSegment.from_wav(audiofile)
     # Splits wav file on silence
+    # to an array of AudioSegments
+    # contained in chunks
     print("Splitting file...")
     stime = time.time()
     chunks = split_on_silence(
         soundstream, 
         min_silence_len=400, 
         # Silence threshold is deliberatly low
-        # since false positive have a much greater impact on sentence
-        # structure than false negatives
+        # to enable lots of possible cuts 
         silence_thresh=-45, 
     )
     etime = time.time()
@@ -28,33 +33,51 @@ def cut_audio(audiofile):
         return [audiofile]
     else:
         chlen = len(chunks)
+    # Target length of chunks cuts
+    # in milliseconds. Small enough to accepted by the 
+    # Google Web Speech to Text API
     out_len = 100*1000
     out_chunks = [chunks[0]]
     i = 0 
     for chunk in chunks[1:]:
         print("Recombining " + str(i) + " on " + str(chlen))
+        # Appends a new chunk to the last if it is too short
         if len(out_chunks[-1]) < out_len:
             out_chunks[-1] += chunk
+        # Appends a chunk to the output array if its length is ok
         else:
             out_chunks.append(chunk)
         i += 1
     out_list = []
     i = 0
     for newchunk in out_chunks:
-        #Adds silence to chunks
+        # Adds silence to chunks by concatenating AudioSegments
         silence = AudioSegment.silent(duration=10)
         audio_chunk = silence + newchunk + silence
-
+        # Wav files are the way to provide interoperability between
+        # the different audio libraries (pydub, SpeechRecognition, pymovie)
+        # They will be deleted at program exit
+        # Format:   Each chunk of audio is outputted in its seperate 
+        #           chunkN.wav where N corresponds to its chunk
+        #           index.
         audio_chunk.export( "./chunk{0}.wav".format(i),
                             bitrate = '192k', 
                             format="wav")
+        # Forms a list of the chunk filenames
+        # which is the the interface between the program
+        # and the chunkN.wav files
         filename = 'chunk'+str(i)+'.wav'
         out_list.append(filename)
         i += 1
 
     return out_list
 
-
+# It just works(tm)
+# Takes source file and converts it to text
+# using python SpeechRecognition's built-it API key
+# for Google Web Speech to Text API
+# note : assumes file is in directory of program
+# note2: Avoid high-volume requests  
 def tts_from_file(source_file):
     with sr.AudioFile(source_file) as source:
         audio = r.record(source)
@@ -85,7 +108,7 @@ def tts_from_file(source_file):
 #|_|  |_|\__,_|_|_| |_|
 ######################
 
-# constant strings to facilitate file interoperability
+# constant string to facilitate file interoperability
 wavfile = "tempwavaudio.wav"
 clip = mp.VideoFileClip("Talking.mp4")
 length = clip.duration
@@ -99,6 +122,7 @@ else:
 out_string = ""
 # Measuring TTS time
 start = time.time()
+# Avoids spliting the Audiofile if its short enough
 if not need_cut:
     try:
         temp_string = tts_from_file(wavfile)
@@ -140,4 +164,12 @@ f=open("Lesson.txt","w+")
 f.write(response.text)
 f.close()
 
+# Cleanup.
+# Deletes temporary chunk files and pymovie conversion result
+# Appends temporary converted file to enable single-loop cleanup
+
+filelist.append(wavfile)
+for wfile in filelist:
+    if os.path.exists(wfile):
+        os.remove(wfile)
 
