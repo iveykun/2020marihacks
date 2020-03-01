@@ -575,6 +575,7 @@ def End():
                 text = open(str("Notes.txt")).read()
                 tts = gTTS(text, lang='en')
                 tts.save("good.mp3")
+                os.startfile("good.mp3")
                 Thanks()
                 break
             elif values[0]=="No":
@@ -599,3 +600,4 @@ def Thanks():
         
 
 Opening()
+
