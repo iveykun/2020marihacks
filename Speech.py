@@ -154,8 +154,8 @@ def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
             try:
                 temp_string = tts_from_file(audio_file)
                 out_string += temp_string
-            except:
-                print("Skipped file " + audio_file + " in chunk list")
+            except Exception as error:
+                print("Skipped file " + audio_file + " in chunk list : {0}".format(error))
             index+=1
     elapsed = time.time() - start
     #For logging purposes
