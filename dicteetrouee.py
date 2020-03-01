@@ -26,7 +26,7 @@ def dt(txt):  # remember to add quotes ex: dt('corona.txt')
     #print(lst)
     dic = {}
     for count, thing in enumerate(lst):
-        dic[thing] = count
+        dic[count] = thing
         replace = ' _________{}{}{} '.format('[', count, '] ') 
         textcopy = textcopy.replace(thing, replace)  # replacing the keywords with blanks
     #textcopy.replace('thinking', '________')
@@ -43,14 +43,14 @@ def dt(txt):  # remember to add quotes ex: dt('corona.txt')
     
     f.close()
     #print(textcopy)
+    # reveal('abilities', 18, dic)  # you need to put them in this order 
+    return dic
 
-'''
-
-text = str(lst)
-token = word_tokenize(text)
-tags = nltk.pos_tag(token)
-reg = "NP: {<DT>?<JJ>*<NN>}" 
-a = nltk.RegexpParser(reg)
-result = a.parse(tags)
-print(result)
-'''
+def reveal(answer, num, dic):  # get answer, tells if it's right
+    real = dic.get(num)
+    if answer in real:
+        print("Correct! The answer is ", real)
+    else:
+        print("Wrong! The answer is ", real)
+    
+# dt('corona.txt')
