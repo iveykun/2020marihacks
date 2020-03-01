@@ -14,6 +14,9 @@ from nltk import ne_chunk
 from nltk.tokenize import word_tokenize
 import random
 
+
+
+
 '''THIS IS THE QUIZ PART'''
 
 def dt(txt="Notes.txt"):  # remember to add quotes ex: dt('corona.txt')
@@ -258,7 +261,7 @@ def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
     f=open("Notes.txt","w+")
     f.write(response.text)
     f.close()
-    #cleanup(filelist)
+    cleanup(filelist)
     # Returns 0 in case of sucess, as is tradition 
     return 0
 
