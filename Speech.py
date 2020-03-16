@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #### FOR DEVELOPMENT & TESTING PURPOSES ####
 import os
+import asyncio
 import sys
 import speech_recognition as sr
 import moviepy.editor as mp
@@ -22,6 +23,7 @@ def cut_audio(audiofile, chunk_size=30, silence_threshold=-45):
     # Splits wav file on silence
     # to an array of AudioSegments
     # contained in chunks
+    print(str(soundstream.dBFS) +  " and " + str(soundstream.max_dBFS))
     print("Splitting file...")
     stime = time.time()
     chunks = split_on_silence(
@@ -29,7 +31,8 @@ def cut_audio(audiofile, chunk_size=30, silence_threshold=-45):
         min_silence_len=400, 
         # Silence threshold is deliberatly low
         # to enable lots of possible cuts 
-        silence_thresh=silence_threshold, 
+        silence_thresh=silence_threshold,
+        keep_silence=200
     )
     etime = time.time() - stime
     print("...in " + str(etime) + " seconds")
@@ -84,12 +87,12 @@ def cut_audio(audiofile, chunk_size=30, silence_threshold=-45):
 # for Google Web Speech to Text API
 # note : assumes file is in directory of program
 # note2: Avoid high-volume requests  
-def tts_from_file(source_file):
+async def tts_from_file_async(source_file, index, loop):
     r = sr.Recognizer()
     with sr.AudioFile(source_file) as source:
         audio = r.record(source)
         try:
-            recognized_text=r.recognize_google(audio)
+            recognized_text = await loop.run_in_executor(None, r.recognize_google, audio)
         # Handles case for unrecognizable speech
         except sr.UnknownValueError:
             print("Google API could not recognize speech")
@@ -98,13 +101,23 @@ def tts_from_file(source_file):
             # Changing speech recognition back-end if Google refuses our request
             print("Could not perform the request, Google Web-Speech API: {0}".format(error))
             raise ValueError
+        except Exception as error:
+            print("Other Error : {0}".format(error))
         #For logging purposes
         # print(recognized_text)
         if isinstance(recognized_text, str):
-            return recognized_text
+            return (index, recognized_text)
         else:
             raise ValueError("Recognized Text not a string!")
 
+async def tts_async_manager(files, loop):
+    operations = []
+    index = 0
+    for audiofile in files:
+        operation = asyncio.create_task(tts_from_file_async(audiofile, index, loop))
+        operations.append(operation)
+        index += 1
+    return await asyncio.gather(*operations, return_exceptions=True)
 
 # Cleanup.
 # Deletes temporary chunk files and pymovie conversion result
@@ -122,8 +135,7 @@ def cleanup(filelist):
 #|_|  |_|\__,_|_|_| |_|
 #######################
 
-# constant string to facilitate file interoperability
-def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
+def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-35):
     wavfile = "tempwavaudio.wav"
     clip = mp.VideoFileClip(filename)
     length = clip.duration
@@ -135,12 +147,12 @@ def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
         need_cut = False
     out_string = ""
     # Measuring TTS time
-    start = time.time()
+    start = 0
     # Avoids spliting the Audiofile if its short enough
     if not need_cut:
         try:
-            temp_string = tts_from_file(wavfile)
-            out_string += temp_string
+            temp_string = tts_from_file_async(wavfile, -1)
+            out_string += temp_string[1]
         except ValueError:
             need_cut = True
             # Resets output string
@@ -148,18 +160,18 @@ def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
     if need_cut:
         filelist = cut_audio(wavfile, chunk_size, silence_threshold)
         maxlen = len(filelist)
-        index = 1
-        for audio_file in filelist:
-            print("Processing chunk " + str(index) + " of "  + str(maxlen))
-            try:
-                temp_string = tts_from_file(audio_file)
-                out_string += temp_string
-            except Exception as error:
-                print("Skipped file " + audio_file + " in chunk list : {0}".format(error))
-            index+=1
-    elapsed = time.time() - start
+        out_dict = {}
+        start = time.time()
+        loop = asyncio.get_event_loop()
+        string_tuples = loop.run_until_complete(tts_async_manager(filelist, loop))
+        out_dict = dict((x,y) for x, y in string_tuples)
+        # String repiecement
+        for elem in sorted(out_dict.items()):
+            out_string += elem[1]
     #For logging purposes
-    print(out_string + " in " + str(elapsed) + " seconds", end="\r")
+    elapsed = time.time() - start
+    print("TTS in " + str(elapsed))
+    #print(out_string + " in " + str(elapsed) + " seconds", end="\r")
     import requests
     data = {'text':out_string}
     # Uses the following website to generate punctuated file
@@ -175,11 +187,11 @@ def recon_speech(filename="Talking.mp4", chunk_size=30, silence_threshold=-45):
         cleanup(filelist)
         sys.exit(127)
     #Logging purposes
-    print(response.text)
-    f=open("Lesson.txt","w+")
+    #print(response.text)
+    f=open("LessonAsync.txt","w+")
     f.write(response.text)
     f.close()
-    #cleanup(filelist)
+    cleanup(filelist)
     # Returns 0 in case of sucess, as is tradition 
     return 0
 #### FOR TESTING PURPOSES ONLY ####
